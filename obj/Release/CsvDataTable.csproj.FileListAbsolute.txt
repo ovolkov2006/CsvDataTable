@@ -3,4 +3,3 @@ C:\C_SHARP\Nuget\CsvDataTable\CsvDataTable\bin\Release\CsvDataTable.pdb
 C:\C_SHARP\Nuget\CsvDataTable\CsvDataTable\obj\Release\CsvDataTable.dll
 C:\C_SHARP\Nuget\CsvDataTable\CsvDataTable\obj\Release\CsvDataTable.pdb
 C:\C_SHARP\NUGET\CsvDataTable\CsvDataTable\obj\Release\CsvDataTable.csprojResolveAssemblyReference.cache
-C:\C_SHARP\NUGET\CsvDataTable\CsvDataTable\bin\Release\CsvDataTable.cs

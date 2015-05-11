@@ -9,16 +9,16 @@ using System.Text;
 namespace Csv
 {
 
-  public static class CsvExtensions
+  public static class CsvExtentions
     {
-        public static bool SaveToCsvFile(this DataTable table, string filename, bool append = false, char delimeter = ',', char quote = '"')
+        public static bool SaveToCsvFile(this DataTable table, string filename, bool append = false, Encoding encoding=null, char delimeter = ',', char quote = '"')
         {
             try
             {
                 // Like Excel, we'll get the highest column number used,
                 // and then write out that many columns for every row
                 var numColumns = table.Columns.Count;
-                using (var writer = new CsvFileWriter(filename, append))
+                using (var writer = new CsvFileWriter(filename, append,encoding??Encoding.UTF8))
                 {
                     writer.Delimiter = delimeter;
                     writer.Quote = quote;
@@ -67,17 +67,18 @@ namespace Csv
         /// Read csv file
         /// </summary>
         /// <param name="filename">Path to file</param>
+        /// <param name="encoding">Encoding</param>
         /// <param name="delimeter">Delimeter between parameters in files</param>
         /// <param name="quote">Brackets around text</param>
         /// <param name="emptyLineBehavior">Determines how empty lines are interpreted when reading CSV files</param>
         /// <returns>true if file read seccessfully</returns>
-        public bool ReadFromFile(string filename, char delimeter = ',', char quote = '"', EmptyLineBehavior emptyLineBehavior = EmptyLineBehavior.NoColumns)
+        public bool ReadFromFile(string filename, Encoding encoding=null,char delimeter = ',', char quote = '"', EmptyLineBehavior emptyLineBehavior = EmptyLineBehavior.NoColumns)
         {
             try
             {
                 this.Rows.Clear();
                 var columns = new List<string>();
-                using (var reader = new CsvFileReader(filename, emptyLineBehavior))
+                using (var reader = new CsvFileReader(filename,encoding??Encoding.UTF8 ,emptyLineBehavior))
                 {
                     reader.Delimiter = delimeter;
                     reader.Quote = quote;
@@ -95,7 +96,7 @@ namespace Csv
                             this.Columns.Add(dc);
                         }
 
-                        this.Rows.Add(columns.ToArray());
+                        this.Rows.Add(columns.ToArray<object>());
                     }
                 }
                 FileName = filename;
@@ -229,22 +230,23 @@ namespace Csv
             return false;
         }
 
-        /// <summary>
+         /// <summary>
         /// Write csv file from this table
         /// </summary>
         /// <param name="filename">Path to file</param>
         /// <param name="append">Append to end of file</param>
+        /// <param name="encoding">Encoding</param>
         /// <param name="delimeter">Delimeter between parameters in files</param>
         /// <param name="quote">Brackets around text</param>
         /// <returns>true if file save seccessfully</returns>
-        public bool SaveToFile(string filename, bool append = false, char delimeter = ',', char quote = '"')
+        public bool SaveToFile(string filename, bool append = false, Encoding encoding=null,char delimeter = ',', char quote = '"')
         {
             try
             {
                 // Like Excel, we'll get the highest column number used,
                 // and then write out that many columns for every row
                 var numColumns = this.Columns.Count;
-                using (var writer = new CsvFileWriter(filename, append))
+                using (var writer = new CsvFileWriter(filename, append,encoding??Encoding.UTF8))
                 {
                     writer.Delimiter = delimeter;
                     writer.Quote = quote;
@@ -357,64 +359,19 @@ namespace Csv
         private string CurrLine;
         private int CurrPos;
         private EmptyLineBehavior EmptyLineBehavior;
- 
-		public static string ReadQuotedColumn(ref int currPos, string currLine, char quote = '"', char delimeter = ',')
-        {
-            // Skip opening quote character
-            Debug.Assert(currPos < currLine.Length && currLine[currPos] == quote);
-            currPos++;
 
-            // Parse column
-            var builder = new StringBuilder();
-            while (true)
-            {
 
-                // Test for quote character
-                if (currLine[currPos] == quote)
-                {
-                    // If two quotes, skip first and treat second as literal
-                    int nextPos = (currPos + 1);
-                    if (nextPos < currLine.Length && currLine[nextPos] == quote)
-                        currPos++;
-                    else
-                        break;  // Single quote ends quoted sequence
-                }
-                // Add current character to the column
-                builder.Append(currLine[currPos++]);
-            }
-
-            if (currPos < currLine.Length)
-            {
-                // Consume closing quote
-                Debug.Assert(currLine[currPos] == quote);
-                currPos++;
-                // Append any additional characters appearing before next delimiter
-                builder.Append(ReadUnquotedColumn(ref currPos, currLine, delimeter));
-            }
-            // Return column value
-            return builder.ToString();
-        }
-        public static string ReadUnquotedColumn(ref int currPos, string currLine, char delimiter = ',')
-        {
-            int startPos = currPos;
-            currPos = currLine.IndexOf(delimiter, currPos);
-            if (currPos == -1)
-                currPos = currLine.Length;
-            if (currPos > startPos)
-                return currLine.Substring(startPos, currPos - startPos);
-            return String.Empty;
-        }
-		
         /// <summary>
         /// Initializes a new instance of the CsvFileReader class for the
         /// specified stream.
         /// </summary>
         /// <param name="stream">The stream to read from</param>
+        /// <param name="encoding">Encoding</param>
         /// <param name="emptyLineBehavior">Determines how empty lines are handled</param>
-        public CsvFileReader(Stream stream,
+        public CsvFileReader(Stream stream,Encoding encoding=null,
             EmptyLineBehavior emptyLineBehavior = EmptyLineBehavior.NoColumns)
         {
-            Reader = new StreamReader(stream);
+            Reader = new StreamReader(stream,encoding??Encoding.UTF8);
             EmptyLineBehavior = emptyLineBehavior;
         }
 
@@ -423,11 +380,12 @@ namespace Csv
         /// specified file path.
         /// </summary>
         /// <param name="path">The name of the CSV file to read from</param>
+        /// <param name="encoding">Encoding</param>
         /// <param name="emptyLineBehavior">Determines how empty lines are handled</param>
-        public CsvFileReader(string path,
+        public CsvFileReader(string path, Encoding encoding = null,
             EmptyLineBehavior emptyLineBehavior = EmptyLineBehavior.NoColumns)
         {
-            Reader = new StreamReader(path);
+            Reader = new StreamReader(path, encoding ?? Encoding.UTF8);
             EmptyLineBehavior = emptyLineBehavior;
         }
 

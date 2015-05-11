@@ -41,7 +41,6 @@
   <ItemGroup>
     <Compile Include="CsvDataTable.cs">
       <SubType>Component</SubType>
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
