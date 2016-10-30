@@ -165,6 +165,16 @@ namespace Csv
         }
 
 
+        /// <summary>
+        /// Read from file with headers from first row
+        /// </summary>
+        /// <param name="filename"></param>
+        /// <param name="setheaderfromfirstrow"></param>
+        /// <param name="encoding"></param>
+        /// <param name="delimeter"></param>
+        /// <param name="quote"></param>
+        /// <param name="emptyLineBehavior"></param>
+        /// <returns></returns>
         public bool ReadFromFile(string filename, bool setheaderfromfirstrow = true, Encoding encoding = null, char delimeter = ',', char quote = '"',
            EmptyLineBehavior emptyLineBehavior = EmptyLineBehavior.NoColumns)
         {
@@ -188,6 +198,65 @@ namespace Csv
 
             }
             return b;
+        }
+
+
+        /// <summary>
+        /// Read csv from Text
+        /// </summary>
+        /// <param name="text">Input Text</param>
+        /// <param name="encoding">Encoding</param>
+        /// <param name="delimeter">Delimeter between parameters in files</param>
+        /// <param name="quote">Brackets around text</param>
+        /// <param name="emptyLineBehavior">Determines how empty lines are interpreted when reading CSV files</param>
+        /// <returns>true if file read seccessfully</returns>
+        public bool ReadFromText(string text, Encoding encoding, char delimeter = ',', char quote = '"',
+            EmptyLineBehavior emptyLineBehavior = EmptyLineBehavior.NoColumns)
+        {
+            try
+            {
+                Rows.Clear();
+                var columns = new List<string>();
+                using (var mem = new MemoryStream())
+                using (StreamWriter writer = new StreamWriter(mem, encoding))
+                {
+                    writer.Write(text);
+                    writer.Flush();
+
+                    mem.Position = 0;
+                    using (var reader = new CsvFileReader(mem, encoding ?? Encoding.UTF8, emptyLineBehavior))
+                    {
+                        reader.Delimiter = delimeter;
+                        reader.Quote = quote;
+                        while (reader.ReadRow(columns))
+                        {
+                            var cols = Columns.Count;
+                            while (Columns.Count < columns.Count)
+                            {
+                                //Избегаем Null
+                                var dc = new DataColumn(String.Format("Column{0}", cols++), typeof(string))
+                                {
+                                    AllowDBNull = false,
+                                    DefaultValue = string.Empty
+                                };
+                                Columns.Add(dc);
+                            }
+
+                            Rows.Add(columns.ToArray<object>());
+                        }
+                    }
+                }
+
+                FileName = "";
+
+                return true;
+            }
+            catch (Exception ex)
+            {
+
+            }
+
+            return false;
         }
 
         /// <summary>
